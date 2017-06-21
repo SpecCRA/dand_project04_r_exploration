@@ -12,3 +12,24 @@ I'd like them to just be listed as
 import csv
 
 INPUT_FILE = "nba_2016_17_player_data.csv"
+OUTPUT_FILE = "2016_17_nba_player_data.csv"
+
+new_data = []
+
+with open(INPUT_FILE, "rb") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        data = {}
+        for item in row:
+            data[item] = row[item]
+        strs = row["Player"].encode("string-escape")
+        find_backslash = strs.find("\\")
+        data["Player"] = strs[:find_backslash]
+        new_data.append(data)
+
+keys = new_data[0].keys()
+
+with open(OUTPUT_FILE, "ab") as f:
+    dict_writer = csv.DictWriter(f, keys)
+    dict_writer.writeheader()
+    dict_writer.writerows(new_data)
