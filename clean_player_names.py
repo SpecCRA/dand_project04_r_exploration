@@ -11,25 +11,39 @@ I'd like them to just be listed as
 
 import csv
 
-INPUT_FILE = "nba_2016_17_player_data.csv"
 OUTPUT_FILE = "2016_17_nba_player_data.csv"
 
 new_data = []
+keys = []
 
-with open(INPUT_FILE, "rb") as f:
+with open("nba_2016_17_player_advanced.csv", "rb") as f:
     reader = csv.DictReader(f)
     for row in reader:
-        data = {}
-        for item in row:
-            data[item] = row[item]
-        strs = row["Player"].encode("string-escape")
-        find_backslash = strs.find("\\")
-        data["Player"] = strs[:find_backslash]
-        new_data.append(data)
+    	data = {}
+        for key in row:
+            if key not in keys:
+                #print key
+                keys.append(key)
+                for key in row:
+                    data[key] = row[key]
+                strs = row["Player"].encode("string-escape")
+                find_backslash = strs.find("\\")
+                data["Player"] = strs[:find_backslash]
+	    with open("nba_2016_17_player_per_36.csv", "rb") as next_file:
+	        reader01 = csv.DictReader(next_file)
+	        for line in reader01:
+	            for item in line:
+	                if item not in keys:
+	                    #print item
+	                    keys.append(item)
+	                    data[item] = line[item]
+    print data
+    new_data.append(data)
 
-keys = new_data[0].keys()
+# print keys
+print new_data
 
-with open(OUTPUT_FILE, "ab") as f:
-    dict_writer = csv.DictWriter(f, keys)
-    dict_writer.writeheader()
-    dict_writer.writerows(new_data)
+# with open(OUTPUT_FILE, "ab") as f:
+#    dict_writer = csv.DictWriter(f, keys)
+#    dict_writer.writeheader()
+#    dict_writer.writerows(new_data)
