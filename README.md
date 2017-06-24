@@ -1,4 +1,6 @@
-https://www.kaggle.com/sfu-summit/starcraft-ii-replay-analysis
+## Link to data source : https://www.kaggle.com/sfu-summit/starcraft-ii-replay-analysis
+
+# Description of each variable
 
 GameID: Unique ID for each game
 
