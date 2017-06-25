@@ -29,6 +29,15 @@ library(knitr)
 library(gridExtra)
 ```
 
+```{r}
+# for tiny
+setwd("~/dand_files/project04_files/")
+
+# for mini 
+setwd("~/dand_files/project04/")
+```
+
+
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 sc <- read.csv("starcraft.csv")
@@ -42,7 +51,7 @@ I am exploring this dataset to look mehanical differences among players of diffe
 
 Each variable in the dataset is hypothesized to be correlated with higher skill. For instance, better players will make and be able to use more complex units. Lower level players generally play with lower APM and utilize less mechanical tools available (hot keys and mini map functions). Most variables are divided by the time elapsed to generate a standard for variables that  naturally acculumate over time. 
 
-This data is also a snapshot of the overall skill levels for players at the time of data collection and for the specific expansion called Wings of Liberty. 
+This data is also a snapshot of the overall skill levels for players at the time of data collection and for the specific expansion called Wings of Liberty. The explanation of league placement is shown here: http://wiki.teamliquid.net/starcraft2/Battle.net_Leagues
 
 My main question is which variables affect skill level most? Other questions include what habits separates players in top placements? This can provide insight into where players at each skill level hit skill walls and must work deliberately in order to improve and move into higher league placements.
 
@@ -66,23 +75,70 @@ ggplot(aes(Age), data = sc) +
   geom_histogram(binwidth = 1) +
   scale_x_continuous(breaks = seq(0,50,5))
 summary(sc$Age)
+table(sc$Age)
+```
+These are counts of the contributing players to this dataset. Technically, professional and grandmaster players are both in the grandmaster category, but the community agrees pro players are in a different class.
 
-ggplot(aes(APM), data = sc) + 
-  geom_histogram(binwidth = 10)
-summary(sc$APM)
-
-ggplot(aes(ComplexUnitsMade), data = sc) + 
+```{r Time_data}
+ggplot(aes(HoursPerWeek), data = sc) + 
   geom_histogram()
 
-ggplot(aes(TotalMapExplored), data = sc) + 
-  geom_histogram(binwidth = .00001)
+ggplot(aes(HoursPerWeek), data = sc) + 
+  geom_histogram(binwidth = 1)
+
+ggplot(aes(HoursPerWeek), data = sc) + 
+  geom_histogram(binwidth = 1) + 
+  scale_x_continuous(limits = c(0, 50), breaks = seq(0, 50, 5))
+
+summary(sc$HoursPerWeek)
+
+ggplot(aes(TotalHours), data = sc) + 
+  geom_histogram()
+
+summary(sc$TotalHours)
+
+ggplot(aes(TotalHours), data = sc) + 
+  geom_histogram(binwidth = 50) + 
+  xlim(0, 1500)
+```
+The hours spent playing StarCraft 2 is left skewed with many outliers. Zooming into hour per week, we can see most players play between 0 to 35 hours a week. Zooming into total hours, most players are in the 0 to 1500 hours categories.
+
+```{r Univariate_Plots_APM}
+ggplot(aes(APM), data = sc) +
+  geom_histogram()
+
+ggplot(aes(APM), data = sc) + 
+  geom_histogram(binwidth = 5)
+
+ggplot(aes(APM), data = sc) + 
+  geom_histogram(binwidth = 5) + 
+  scale_x_continuous(limits = c(30, 220))
+
+summary(sc$APM)
+```
+The majority of APM values are somewhere between 50 and 200. Zooming in, we get a clearer view of that most players do play within the 80 and 150 APM range. 
+
+```{r Univariate_Plots_general}
+ggplot(aes(GapBetweenPACs), data = sc) + 
+  geom_histogram(binwidth = 1)
 
 ggplot(aes(GapBetweenPACs), data = sc) + 
   geom_histogram(binwidth = 1) + 
   scale_x_continuous(limits = c(0, 150))
 
 summary(sc$GapBetweenPACs)
+
+ggplot(aes(TotalMapExplored), data = sc) + 
+  geom_histogram(binwidth = .00001)
+
+summary(sc$TotalMapExplored)
+
+ggplot(aes(WorkersMade), data = sc) + 
+  geom_histogram(binwidth = 0.0001)
+
+summary(sc$WorkersMade)
 ```
+These are general, singular measurements of different skill levels. Of course, these are all naturally correlated with APM, so it makes sense that the distributions are similar to the APM histogram. Since these are all standardized based on a time period, it also makes sense that they have similar distributions based on this normalization. 
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
@@ -97,6 +153,8 @@ reflect on and summarize what you've found. Use the questions below to help you
 gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
+
+There are 3395 contributing players to this dataset with 
 
 ### What is/are the main feature(s) of interest in your dataset?
 
@@ -208,3 +266,5 @@ future work that could be done with the dataset.
 > **Tip**: Don't forget to remove this, and the other **Tip** sections before
 saving your final work and knitting the final report!
 >>>>>>> 4248a1537320273e9c25338bbff21d74d1323c48
+
+Something to improve on - APM patterns through the game because peak APM may be more telling than regular APM through the game if all you do is spam.
