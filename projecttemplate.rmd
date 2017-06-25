@@ -92,6 +92,12 @@ ggplot(aes(HoursPerWeek), data = sc) +
 
 summary(sc$HoursPerWeek)
 
+ggplot(aes(HoursPerWeek), 
+       data = subset(sc, sc$HoursPerWeek < 112)) + 
+  geom_histogram(binwidth = 1)
+
+summary(subset(sc$HoursPerWeek, sc$HoursPerWeek < 112))
+
 ggplot(aes(TotalHours), data = sc) + 
   geom_histogram()
 
@@ -100,8 +106,10 @@ summary(sc$TotalHours)
 ggplot(aes(TotalHours), data = sc) + 
   geom_histogram(binwidth = 50) + 
   xlim(0, 1500)
+
+summary(subset(sc$TotalHours, sc$TotalHours < 15000))
 ```
-The hours spent playing StarCraft 2 is left skewed with many outliers. Zooming into hour per week, we can see most players play between 0 to 35 hours a week. Zooming into total hours, most players are in the 0 to 1500 hours categories.
+The hours spent playing StarCraft 2 is left skewed with many outliers. Zooming into hour per week, we can see most players play between 0 to 35 hours a week. Zooming into total hours, most players are in the 0 to 1500 hours categories. The higher end of the total hours played is just impossible, so I subsetted the data in the final summary. 
 
 ```{r Univariate_Plots_APM}
 ggplot(aes(APM), data = sc) +
@@ -140,6 +148,13 @@ summary(sc$WorkersMade)
 ```
 These are general, singular measurements of different skill levels. Of course, these are all naturally correlated with APM, so it makes sense that the distributions are similar to the APM histogram. Since these are all standardized based on a time period, it also makes sense that they have similar distributions based on this normalization. 
 
+```{r Workers_created_raw}
+sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
+sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
+summary(sc$WorkersCreatedTotal)
+```
+
+
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
 formatted nicely in the knitted text. Note as well that text on consecutive
@@ -154,19 +169,34 @@ gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
-There are 3395 contributing players to this dataset with 
+There are 3395 contributing players to this dataset with one general skill categorization (LeagueIndex), player information (Age, HoursPerWeek, TotalHours), and general measurements of skill. 
+
+LeagueIndex goes from 1 to 8. 1 being the worst and 8 being you should go compete in tournaments.
+
+Observations:
+* Most contributing users are in the top half of the player pool according to the league placement distribution.
+* Mean APM among these players is 117.05 which is a little low from my expectations
+* All the variables that have been divided by time are very similarly distributed.
+* The max value in TotalHours is 1000000 hours which is definitely an error because that is physically impossible. The game was released in July 2010, and the data was collected in 2013. This is probably just some people being funny.
 
 ### What is/are the main feature(s) of interest in your dataset?
 
-### What other features in the dataset do you think will help support your \
+I'd like to primarily see which measure or collection of measurements characterize skill best. I suspect all PAC data is the most telling and GapBetweenPACs to be the difference before players achieve GrandMaster or higher placement. Secondarily, I'd like to explore the relationship with time spent playing to help debunk the idea that ability in StarCraft 2 is fixed. 
+
+### What other features in the dataset do you think will help support your \ 
 investigation into your feature(s) of interest?
 
+I'm guessing hot key usage is the next best predictor of skill. Habitually using your hot keys allows a player to play the game more fluidly, faster, and manage various aspects of the game simultaenously. Neglecting hot keys, particularly the SelectByHotkeys significantly hinders overall gameplay.
+
 ### Did you create any new variables from existing variables in the dataset?
+
+I created a total workers made variable by multiplying WorkersMade and MaxTimeStamp. Since there is no such thing as a fraction of a worker, I used the round() function to make everything integers instead.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
 
+I subsetted TotalHours and HoursPerWeek variables to eliminate the impossible values such as playing for 100000 when the game has not been released for that long. I subsetted HoursPerWeek to values less than 112 hours because there are only 168 hours in a week, and I'm assuming a third of those hours are spent sleeping or doing other things besides playing StarCraft 2. 
 
 # Bivariate Plots Section
 
