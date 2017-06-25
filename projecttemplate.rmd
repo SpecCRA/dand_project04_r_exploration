@@ -29,12 +29,12 @@ library(knitr)
 library(gridExtra)
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE}
 # for tiny
-setwd("~/dand_files/project04_files/")
+#setwd("~/dand_files/project04_files/")
 
 # for mini 
-setwd("~/dand_files/project04/")
+#setwd("~/dand_files/project04/")
 ```
 
 
@@ -79,7 +79,7 @@ table(sc$Age)
 ```
 These are counts of the contributing players to this dataset. Technically, professional and grandmaster players are both in the grandmaster category, but the community agrees pro players are in a different class.
 
-```{r Time_data}
+```{r echo=FALSE, message=FALSE, Time_data}
 ggplot(aes(HoursPerWeek), data = sc) + 
   geom_histogram()
 
@@ -111,7 +111,7 @@ summary(subset(sc$TotalHours, sc$TotalHours < 15000))
 ```
 The hours spent playing StarCraft 2 is left skewed with many outliers. Zooming into hour per week, we can see most players play between 0 to 35 hours a week. Zooming into total hours, most players are in the 0 to 1500 hours categories. The higher end of the total hours played is just impossible, so I subsetted the data in the final summary. 
 
-```{r Univariate_Plots_APM}
+```{r echo=FALSE, message=FALSE, Univariate_Plots_APM}
 ggplot(aes(APM), data = sc) +
   geom_histogram()
 
@@ -126,7 +126,7 @@ summary(sc$APM)
 ```
 The majority of APM values are somewhere between 50 and 200. Zooming in, we get a clearer view of that most players do play within the 80 and 150 APM range. 
 
-```{r Univariate_Plots_general}
+```{r echo=FALSE, message=FALSE, Univariate_Plots_general}
 ggplot(aes(GapBetweenPACs), data = sc) + 
   geom_histogram(binwidth = 1)
 
@@ -148,7 +148,7 @@ summary(sc$WorkersMade)
 ```
 These are general, singular measurements of different skill levels. Of course, these are all naturally correlated with APM, so it makes sense that the distributions are similar to the APM histogram. Since these are all standardized based on a time period, it also makes sense that they have similar distributions based on this normalization. 
 
-```{r Workers_created_raw}
+```{r echo=FALSE, message=FALSE, Workers_created_raw}
 sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
 sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
 summary(sc$WorkersCreatedTotal)
