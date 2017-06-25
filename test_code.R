@@ -11,4 +11,6 @@ library(knitr)
 library(gridExtra)
 
 #csv file to load
-pd <- read.csv("2016_17_nba_player_data.csv")
+wine_data <- read.csv("wineQualityReds.csv")
+
+

@@ -1,4 +1,4 @@
-TITLE by YOUR_NAME_HERE
+StarCraft 2 Replay Data Exploration by Benjamin Xiao
 ========================================================
 
 > **Tip**: You will see quoted sections like this throughout the template to
@@ -24,16 +24,27 @@ a margin line to help you keep track of this guideline!
 # want it to. This will clean up the flow of your report.
 
 library(ggplot2)
+library(dplyr)
+library(knitr)
+library(gridExtra)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-
+sc <- read.csv("starcraft.csv")
 ```
 
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
+# Introduction
+
+StarCraft 2 is a sequel to the ever popular real time strategy game, StarCraft Brood War. In its competitive form, two players face each other on various maps choosing one of three available races or a random choice. The database used can be downloaded here: https://www.kaggle.com/sfu-summit/starcraft-ii-replay-analysis and the original study of this dataset is at http://summit.sfu.ca/item/13328
+
+I am exploring this dataset to look mehanical differences among players of different skill levels. The skill levels are broadly placed into bins from 1 to 8, 8 being the most skilled and smallest percentage of the sample. 
+
+Each variable in the dataset is hypothesized to be correlated with higher skill. For instance, better players will make and be able to use more complex units. Lower level players generally play with lower APM and utilize less mechanical tools available (hot keys and mini map functions). Most variables are divided by the time elapsed to generate a standard for variables that  naturally acculumate over time. 
+
+This data is also a snapshot of the overall skill levels for players at the time of data collection and for the specific expansion called Wings of Liberty. 
+
+My main question is which variables affect skill level most? Other questions include what habits separates players in top placements? This can provide insight into where players at each skill level hit skill walls and must work deliberately in order to improve and move into higher league placements.
 
 # Univariate Plots Section
 
@@ -45,7 +56,32 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
+summary(sc)
 
+ggplot(aes(LeagueIndex), data = sc) + 
+  geom_histogram()
+table(sc$LeagueIndex)
+
+ggplot(aes(Age), data = sc) + 
+  geom_histogram(binwidth = 1) +
+  scale_x_continuous(breaks = seq(0,50,5))
+summary(sc$Age)
+
+ggplot(aes(APM), data = sc) + 
+  geom_histogram(binwidth = 10)
+summary(sc$APM)
+
+ggplot(aes(ComplexUnitsMade), data = sc) + 
+  geom_histogram()
+
+ggplot(aes(TotalMapExplored), data = sc) + 
+  geom_histogram(binwidth = .00001)
+
+ggplot(aes(GapBetweenPACs), data = sc) + 
+  geom_histogram(binwidth = 1) + 
+  scale_x_continuous(limits = c(0, 150))
+
+summary(sc$GapBetweenPACs)
 ```
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
@@ -171,3 +207,4 @@ future work that could be done with the dataset.
 
 > **Tip**: Don't forget to remove this, and the other **Tip** sections before
 saving your final work and knitting the final report!
+>>>>>>> 4248a1537320273e9c25338bbff21d74d1323c48
