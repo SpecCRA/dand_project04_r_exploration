@@ -4,7 +4,7 @@
 
 GameID: Unique ID for each game
 
-LeagueIndex: 1-8 for Bronze, Silver, Gold, Diamond, Diamond, Platinum, Master, Grand Master, and Professional leagues
+LeagueIndex: 1-8 for Bronze, Silver, Gold, Diamond, Diamond, Platinum, Master, Grand Master, and Professional leagues (respectively)
 
 Age: Age of each player
 
@@ -42,7 +42,7 @@ ComplexUnitsMade: Number of ghosts, infestors, and high templars trained per tim
 
 ComplexAbilityUsed: Abilities requiring specific targeting instructions used per timestamp
 
-MaxTimeStamp: Time stamp of game's last recorded event
+MaxTimeStamp: Time stamp of game's last recorded event measured in milliseconds
 
 # PAC stands for Perception Action Cycle. An APM is a single action by the user. 
 
