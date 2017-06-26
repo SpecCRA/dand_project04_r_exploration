@@ -27,6 +27,13 @@ library(ggplot2)
 library(dplyr)
 library(knitr)
 library(gridExtra)
+library(GGally)
+library(reshape2)
+library(scales)
+library(lattice)
+library(memisc)
+library(car)
+library(MASS)
 ```
 
 ```{r echo=FALSE, message=FALSE}
@@ -49,7 +56,7 @@ StarCraft 2 is a sequel to the ever popular real time strategy game, StarCraft B
 
 I am exploring this dataset to look mehanical differences among players of different skill levels. The skill levels are broadly placed into bins from 1 to 8, 8 being the most skilled and smallest percentage of the sample. 
 
-Each variable in the dataset is hypothesized to be correlated with higher skill. For instance, better players will make and be able to use more complex units. Lower level players generally play with lower APM and utilize less mechanical tools available (hot keys and mini map functions). Most variables are divided by the time elapsed to generate a standard for variables that  naturally acculumate over time. 
+Each variable in the dataset is hypothesized to be correlated with higher skill. For instance, better players will make and be able to use more complex units. Lower level players generally play with lower APM and utilize less mechanical tools available (hot keys and mini map functions). Most variables are divided by the time elapsed to generate a standard for variables that naturally acculumate over time. 
 
 This data is also a snapshot of the overall skill levels for players at the time of data collection and for the specific expansion called Wings of Liberty. The explanation of league placement is shown here: http://wiki.teamliquid.net/starcraft2/Battle.net_Leagues
 
@@ -198,6 +205,8 @@ of the data? If so, why did you do this?
 
 I subsetted TotalHours and HoursPerWeek variables to eliminate the impossible values such as playing for 100000 when the game has not been released for that long. I subsetted HoursPerWeek to values less than 112 hours because there are only 168 hours in a week, and I'm assuming a third of those hours are spent sleeping or doing other things besides playing StarCraft 2. 
 
+Just looking through the data, players with LeagueIndex 8, the professional players, don't have data for age or time. 
+
 # Bivariate Plots Section
 
 > **Tip**: Based on what you saw in the univariate plots, what relationships
@@ -207,8 +216,43 @@ supporting variables. Try to look at relationships between supporting variables
 as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
+cor(subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours)))
 
+set.seed(20022012)
+sc_subset01 <- sc[c(1:4)]
+sc_subset02 <- sc[c(2:4, 6:15)]
+sc_subset03 <- sc[c(2:4, 12:22)]
+
+sc_samp01 <- sc_subset01[sample(1:length(sc_subset01$LeagueIndex), 500), ]
+sc_samp02 <- sc_subset02[sample(1:length(sc_subset01$LeagueIndex), 500), ]
+sc_samp03 <- sc_subset03[sample(1:length(sc_subset01$LeagueIndex), 500), ]
+
+# Okay, this first one didn't actually make sense. I just used it to test output first. Game ID is pretty useless.
+ggpairs(sc_subset01,
+        lower = list(continuous = wrap("points", shape = I("."))),
+        upper = list(combo = wrap("box", outlier.shape = I("."))))
+
+ggpairs(sc_subset02,
+        lower = list(continuous = wrap("points", shape = I("."))),
+        upper = list(combo = wrap("box", outlier.shape = I("."))),
+        axisLabels = "internal")
+
+ggpairs(sc_subset02,
+        lower = list(continuous = wrap("points", shape = I("."))),
+        upper = list(combo = wrap("box", outlier.shape = I("."))))
+
+ggpairs(sc_subset03,
+        lower = list(continuous = wrap("points", shape = I("."))),
+        upper = list(combo = wrap("box", outlier.shape = I("."))))
 ```
+
+At first glance, it looks like APM, PAC data, and hot key usage the strongest predictor of league placement as expected. A little surprisingly, age has little correlation to any of the variables. I'm most interested in the relationship between a player's action variables (APM, PAC data, workers made, etc) and its relation to league placement to examime what separates each league and more generally, what are elite players doing more of?
+
+```{r echo=FALSE, Bivariate_plots_cont}
+ggplot(aes(factor(LeagueIndex), Age), data = sc) + 
+  geom_boxplot()
+```
+
 
 # Bivariate Analysis
 
