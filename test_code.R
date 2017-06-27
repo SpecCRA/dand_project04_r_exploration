@@ -11,6 +11,5 @@ library(knitr)
 library(gridExtra)
 
 #csv file to load
-wine_data <- read.csv("wineQualityReds.csv")
-
+sc <- read.csv("starcraft.csv")
 
