@@ -45,7 +45,7 @@ library(MASS)
 ```
 
 
-```{r echo=FALSE, Load_the_Data}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
 # Load the Data
 sc <- read.csv("starcraft.csv")
 sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
@@ -88,7 +88,7 @@ table(sc$Age)
 ```
 These are counts of the contributing players to this dataset. Technically, professional and grandmaster players are both in the grandmaster category, but the community agrees pro players are in a different class.
 
-```{r echo=FALSE, message=FALSE, Time_data}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Time_data}
 ggplot(aes(HoursPerWeek), data = sc) + 
   geom_histogram()
 
@@ -120,7 +120,7 @@ summary(subset(sc$TotalHours, sc$TotalHours < 15000))
 ```
 The hours spent playing StarCraft 2 is left skewed with many outliers. Zooming into hour per week, we can see most players play between 0 to 35 hours a week. Zooming into total hours, most players are in the 0 to 1500 hours categories. The higher end of the total hours played is just impossible, so I subsetted the data in the final summary. 
 
-```{r echo=FALSE, message=FALSE, Univariate_Plots_APM}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_APM}
 ggplot(aes(APM), data = sc) +
   geom_histogram()
 
@@ -135,7 +135,7 @@ summary(sc$APM)
 ```
 The majority of APM values are somewhere between 50 and 200. Zooming in, we get a clearer view of that most players do play within the 80 and 150 APM range. 
 
-```{r echo=FALSE, message=FALSE, Univariate_Plots_general}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_general}
 ggplot(aes(GapBetweenPACs), data = sc) + 
   geom_histogram(binwidth = 1)
 
@@ -157,7 +157,7 @@ summary(sc$WorkersMade)
 ```
 These are general, singular measurements of different skill levels. Of course, these are all naturally correlated with APM, so it makes sense that the distributions are similar to the APM histogram. Since these are all standardized based on a time period, it also makes sense that they have similar distributions based on this normalization. 
 
-```{r echo=FALSE, message=FALSE, Workers_created_raw}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Workers_created_raw}
 sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
 sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
 summary(sc$WorkersCreatedTotal)
@@ -217,7 +217,7 @@ yourself to relationships between a main output feature and one of the
 supporting variables. Try to look at relationships between supporting variables
 as well.
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots}
 # Subset the data to remove NA values in Age, HoursPerWeek, and TotalHours
 cor(subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours)))
 sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
@@ -230,11 +230,6 @@ sc_subset03 <- sc[c(2:4, 12:22)]
 sc_samp01 <- sc_subset01[sample(1:length(sc_subset01$LeagueIndex), 500), ]
 sc_samp02 <- sc_subset02[sample(1:length(sc_subset01$LeagueIndex), 500), ]
 sc_samp03 <- sc_subset03[sample(1:length(sc_subset01$LeagueIndex), 500), ]
-
-# Okay, this first one didn't actually make sense. I just used it to test output first. Game ID is pretty useless.
-ggpairs(sc_subset01,
-        lower = list(continuous = wrap("points", shape = I("."))),
-        upper = list(combo = wrap("box", outlier.shape = I("."))))
 
 ggpairs(sc_subset02,
         lower = list(continuous = wrap("points", shape = I("."))),
@@ -267,7 +262,7 @@ by(sc$ActionLatency, sc$LeagueIndex, summary)
 
 Since APM and action latency are the most correlated to league index, I decided to use APM as my basis first. Both are related to activity of a player in general, and it makese sense that the player who does more is better. 
 
-```{r echo = FALSE, APM_plots}
+```{r echo = FALSE, message=FALSE, warning=FALSE, APM_plots}
 ggplot(aes(WorkersCreatedTotal, APM), data = sc_wo_na) + 
   geom_point()
 
@@ -285,7 +280,7 @@ ggplot(aes(SelectByHotkeys, APM), data = sc) +
   geom_point(alpha = 1/10)
 
 ggplot(aes(AssignToHotkeys, APM), data = sc) + 
-  geom_point(alpha = 1/10)
+  geom_point(alpha = 1/10) 
 ```
 
 # Bivariate Analysis
