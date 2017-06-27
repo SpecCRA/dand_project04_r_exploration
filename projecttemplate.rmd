@@ -48,6 +48,8 @@ library(MASS)
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 sc <- read.csv("starcraft.csv")
+sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
+sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
 ```
 
 # Introduction
@@ -216,7 +218,9 @@ supporting variables. Try to look at relationships between supporting variables
 as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
+# Subset the data to remove NA values in Age, HoursPerWeek, and TotalHours
 cor(subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours)))
+sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
 
 set.seed(20022012)
 sc_subset01 <- sc[c(1:4)]
@@ -234,11 +238,6 @@ ggpairs(sc_subset01,
 
 ggpairs(sc_subset02,
         lower = list(continuous = wrap("points", shape = I("."))),
-        upper = list(combo = wrap("box", outlier.shape = I("."))),
-        axisLabels = "internal")
-
-ggpairs(sc_subset02,
-        lower = list(continuous = wrap("points", shape = I("."))),
         upper = list(combo = wrap("box", outlier.shape = I("."))))
 
 ggpairs(sc_subset03,
@@ -246,13 +245,48 @@ ggpairs(sc_subset03,
         upper = list(combo = wrap("box", outlier.shape = I("."))))
 ```
 
-At first glance, it looks like APM, PAC data, and hot key usage the strongest predictor of league placement as expected. A little surprisingly, age has little correlation to any of the variables. I'm most interested in the relationship between a player's action variables (APM, PAC data, workers made, etc) and its relation to league placement to examime what separates each league and more generally, what are elite players doing more of?
+At first glance, it looks like APM, PAC data, and hot key usage the strongest predictor of league placement as expected. A little surprisingly, age has little correlation to any of the variables. I'm most interested in the relationship between a player's action variables (APM, PAC data, workers made, etc) and league placement.
 
 ```{r echo=FALSE, Bivariate_plots_cont}
-ggplot(aes(factor(LeagueIndex), Age), data = sc) + 
+ggplot(aes(factor(LeagueIndex), Age), data = sc_wo_na) + 
   geom_boxplot()
+
+ggplot(aes(factor(LeagueIndex), APM), data = sc_wo_na) + 
+  geom_boxplot()
+
+by(sc$APM, sc$LeagueIndex, summary)
+
+ggplot(aes(factor(LeagueIndex), NumberOfPACs), data = sc) +
+  geom_boxplot()
+
+ggplot(aes(factor(LeagueIndex), ActionLatency), data = sc) + 
+  geom_boxplot()
+
+by(sc$ActionLatency, sc$LeagueIndex, summary)
 ```
 
+Since APM and action latency are the most correlated to league index, I decided to use APM as my basis first. Both are related to activity of a player in general, and it makese sense that the player who does more is better. 
+
+```{r echo = FALSE, APM_plots}
+ggplot(aes(WorkersCreatedTotal, APM), data = sc_wo_na) + 
+  geom_point()
+
+ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
+  geom_point(alpha = 1/10)
+
+ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
+  geom_point(alpha = 1/5) + 
+  scale_x_continuous(limits = c(0, 150), breaks = seq(0,150,25))
+
+ggplot(aes(NumberOfPACs, APM), data = sc) + 
+  geom_point(alpha = 1/5)
+
+ggplot(aes(SelectByHotkeys, APM), data = sc) + 
+  geom_point(alpha = 1/10)
+
+ggplot(aes(AssignToHotkeys, APM), data = sc) + 
+  geom_point(alpha = 1/10)
+```
 
 # Bivariate Analysis
 
@@ -283,6 +317,8 @@ will do that.
 ```
 
 # Multivariate Analysis
+After a little more exploration, I'd also like to see what players are spending their available APM doing. 
+
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
