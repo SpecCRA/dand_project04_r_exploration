@@ -34,6 +34,7 @@ library(lattice)
 library(memisc)
 library(car)
 library(MASS)
+library(RColorBrewer)
 ```
 
 ```{r echo=FALSE, message=FALSE}
@@ -226,16 +227,23 @@ sc_wo_na$UniqueHotkeysTot <- sc_wo_na$UniqueHotkeys * sc_wo_na$MaxTimeStamp
 sc_wo_na$WorkersCreatedTotal <- sc_wo_na$WorkersMade * sc_wo_na$MaxTimeStamp
 sc_wo_na$WorkersCreatedTotal <- round(sc_wo_na$WorkersCreated)
 sc$UniqueHotkeysTot <- sc$UniqueHotkeys * sc$MaxTimeStamp
+sc$UniqueHotkeysTot <- round(sc$UniqueHotkeysTot)
 
 sc$ComplexUnitsMadeTot <- sc$ComplexUnitsMade * sc$MaxTimeStamp
 sc$ComplexUnitsMadeTot <- round(sc$ComplexUnitsMadeTot)
+
+sc_wo_na$HoursPerWeek_bucket <- cut(sc_wo_na$HoursPerWeek, 
+                                    c(0, 5, 10, 15, 20, 25, 30, 50))
+
+sc$APM_bucket <- cut(sc$APM,
+                     c(0, 50, 100, 200, 300, 500))
 ```
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots}
 # Subset the data to remove NA values in Age, HoursPerWeek, and TotalHours
-cor(subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours)))
 sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
+cor(sc_wo_na[c(2:24)])
 
 set.seed(20022012)
 sc_subset01 <- sc[c(1:4)]
@@ -329,17 +337,17 @@ ggplot(aes(AssignToHotkeys, APM), data = sc) +
   xlab("Log10(AssignToHotkeys)")
 
 ggplot(aes(ActionLatency, APM), data = sc) + 
-  geom_point(alpha = 1/4) + 
+  geom_point(alpha = 1/5, size = 0.7) + 
   scale_y_log10() + 
-  xlab("Log10(ActionLatency)")
+  xlab("Log10(ActionLatency)") 
 
 ggplot(aes(GapBetweenPACs, APM), data = sc) + 
-  geom_point(alpha = 1/5) +
+  geom_point(alpha = 1/5, size = 1) +
   scale_x_log10(limit = c(10,100))  + 
-  xlab("Log10(GapBetweenPACs")
+  xlab("Log10(GapBetweenPACs)")
 
 ggplot(aes(MinimapAttacks, APM), data = sc) + 
-  geom_point(alpha = 1/5) + 
+  geom_point(alpha = 1/5, size = 1) + 
   scale_x_sqrt() + 
   xlab("MinimapAttacks")
 ```
@@ -377,9 +385,88 @@ create here are justified by the plots you explored in the previous section. If
 you plan on creating any mathematical models, this is the section where you
 will do that.
 
-```{r echo=FALSE, Multivariate_Plots}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
+ggplot(aes(APM, GapBetweenPACs), data = sc) + 
+  geom_point(alpha = 0.65, size = 0.75, aes(color = factor(LeagueIndex))) + 
+  scale_color_brewer(type = "div",
+                     guide = guide_legend(title = "League", reverse = T, 
+                                          override.aes = list(alpha = 1, size = 2))) +
+  scale_y_log10() + 
+  scale_x_sqrt()
 
+ggplot(aes(ActionLatency, APM), data = sc) + 
+  geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
+  scale_color_brewer(type = "div",
+                     guide = guide_legend(title = "League", reverse = T, 
+                                          override.aes = list(alpha = 1, size = 2))) + 
+  scale_x_log10() + 
+  facet_wrap(~UniqueHotkeysTot)
+
+ggplot(aes(ActionsInPAC, NumberOfPACs),
+       data = sc) + 
+  geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
+  scale_color_brewer(type = "qual",
+                     guide = guide_legend(title = "League", reverse = T, 
+                                          override.aes = list(alpha = 1, size = 2))) + 
+  scale_x_log10()
+
+# Adding Action latency and gap between PACs shows how long a player spends in one screen to do stuff
+ggplot(aes(HoursPerWeek, (ActionLatency + GapBetweenPACs), 
+           color = factor(LeagueIndex)), 
+       data = subset(sc_wo_na, TotalHours < 6000)) + 
+  geom_point(alpha = 0.80, position = "jitter") +
+  scale_x_continuous(limits = c(0, 100)) + 
+  scale_color_brewer(type = "qual",
+                     guide = guide_legend(title = "League", reverse = T))
+
+ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
+           color = factor(LeagueIndex)), 
+       data = sc) + 
+  geom_point(position = "jitter", alpha = 0.75, size = 1.5) + 
+  scale_color_brewer(type = "qual",
+                     guide = guide_legend(title = "League", reverse = T)) + 
+  ylim(0, 300) +
+  scale_x_continuous(breaks = seq(0,0.008, 0.001)) 
+
+ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
+           color = factor(LeagueIndex)), 
+       data = sc) + 
+  geom_point(position = "jitter", alpha = 0.75, size = 1.5) + 
+  scale_color_brewer(type = "qual",
+                     guide = guide_legend(title = "League", reverse = T)) + 
+  ylim(0, 300) +
+  scale_x_continuous(breaks = seq(0,0.008, 0.001)) + 
+  facet_wrap(~UniqueHotkeysTot)  
+  
+ggplot(aes((MinimapAttacks + MinimapRightClicks), APM), data = sc) + 
+  geom_point(alpha = 0.5, size = 0.8) + 
+  scale_x_log10() +
+  scale_y_sqrt() + 
+  facet_wrap(~LeagueIndex)
+
+ggplot(aes(factor(LeagueIndex), (MinimapAttacks + MinimapRightClicks)), 
+           data = sc) +
+  geom_boxplot(aes(color = APM_bucket)) + 
+  coord_cartesian(ylim = c(0, 0.002))
+
+ggplot(aes(x = APM, color = factor(LeagueIndex)), data = sc) +
+  geom_histogram(binwidth = 50) +
+  scale_color_discrete(name = "League", 
+                      breaks = c("1", "2", "3", "4", "5", "6", "7", "8"),
+                      labels = c("Bronze", "Silver", "Gold", "Platinum", 
+                                 "Diamond", "Masters", "Grandmaster", "Pro")) + 
+  theme(legend.position = "top")
+
+ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) + 
+  geom_boxplot(aes(color = APM_bucket))
+
+ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
+  geom_point(aes(color = factor(LeagueIndex))) +
+  facet_wrap(~UniqueHotkeysTot) +
+  scale_color_brewer(type = "qual") + 
+  theme(legend.position = "top")
 ```
+
 
 # Multivariate Analysis
 
@@ -387,7 +474,11 @@ will do that.
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
 
+Perhaps this isn't really surprising, but speed plays a huge part in league placement, larger than the other mechanics like hot key usage. While APM naturally correlates with PAC data, comparing gaps between PACs, actions in PAC, and APM shows that faster players are constantly moving their screens rather than sending multiple actions per change in screen.
+
 ### Were there any interesting or surprising interactions between features?
+
+I'm surprised at how little hot key usage affects overall league placement and skill. Since most of the pros and I'm assuming most of the better players played StarCraft Brood War, constantly selecting, assigning, re-assigning, and using all your hot keys from 1 to 0 as well as F2, F3, F4, and F5 seems like a natural transition. This may be a clue about how StarCraft 2 is different mechanically from StarCraft Brood War. 
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \
 strengths and limitations of your model.
@@ -405,7 +496,7 @@ units), and good aesthetic choices (e.g. color, transparency). After each plot,
 make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One
-```{r echo=FALSE, Plot_One}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_One}
 
 ```
 
@@ -413,7 +504,7 @@ make sure you justify why you chose each plot by describing what it shows.
 
 
 ### Plot Two
-```{r echo=FALSE, Plot_Two}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Two}
 
 ```
 
@@ -421,7 +512,7 @@ make sure you justify why you chose each plot by describing what it shows.
 
 
 ### Plot Three
-```{r echo=FALSE, Plot_Three}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Three}
 
 ```
 
