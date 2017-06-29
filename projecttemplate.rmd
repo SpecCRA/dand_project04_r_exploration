@@ -1,15 +1,6 @@
 StarCraft 2 Replay Data Exploration by Benjamin Xiao
 ========================================================
 
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
-
-> **Tip**: One of the requirements of this project is that your code follows
-good formatting techniques, including limiting your lines to 80 characters or
-less. If you're using RStudio, go into Preferences \> Code \> Display to set up
-a margin line to help you keep track of this guideline!
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using in your analysis in this code
 # chunk.
@@ -67,13 +58,6 @@ This data is also a snapshot of the overall skill levels for players at the time
 My main question is which variables affect skill level most? Other questions include what habits separates players in top placements? This can provide insight into where players at each skill level hit skill walls and must work deliberately in order to improve and move into higher league placements.
 
 # Univariate Plots Section
-
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
 summary(sc)
@@ -165,18 +149,7 @@ sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
 summary(sc$WorkersCreatedTotal)
 ```
 
-
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
-
 # Univariate Analysis
-
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
@@ -213,12 +186,6 @@ Just looking through the data, players with LeagueIndex 8, the professional play
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, new_variables}
 sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
 sc_wo_na$ComplexUnitsMadeTot <- sc_wo_na$ComplexUnitsMade * sc_wo_na$MaxTimeStamp
@@ -236,9 +203,8 @@ sc_wo_na$HoursPerWeek_bucket <- cut(sc_wo_na$HoursPerWeek,
                                     c(0, 5, 10, 15, 20, 25, 30, 50))
 
 sc$APM_bucket <- cut(sc$APM,
-                     c(0, 50, 100, 200, 300, 500))
+                     c(0, 100, 150, 200, 300, 500))
 ```
-
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots}
 # Subset the data to remove NA values in Age, HoursPerWeek, and TotalHours
@@ -265,15 +231,21 @@ ggpairs(sc_subset03,
 
 At first glance, it looks like APM, PAC data, and hot key usage the strongest predictor of league placement as expected. A little surprisingly, age has little correlation to any of the variables. I'm most interested in the relationship between a player's action variables (APM, PAC data, workers made, etc) and league placement.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
 ggplot(aes(factor(LeagueIndex), Age), data = sc_wo_na) + 
   geom_boxplot()
+
+by(sc$Age, sc$LeagueIndex, summary)
 
 ggplot(aes(factor(LeagueIndex), APM), data = sc_wo_na) + 
   geom_boxplot()
 
 by(sc$APM, sc$LeagueIndex, summary)
+```
 
+I imagined age to have some factor in determining overall skill for a variety of reasons. From the plot, it looks like every league has similar age means and medians. However, there is a stark rise in APM as league placements go up. So as expected, APM is worth exploring further.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
 ggplot(aes(factor(LeagueIndex), NumberOfPACs), data = sc) +
   geom_boxplot()
 
@@ -284,10 +256,11 @@ ggplot(aes(factor(LeagueIndex), ActionLatency), data = sc) +
   geom_boxplot()
 
 by(sc$ActionLatency, sc$LeagueIndex, summary)
+```
 
-ggplot(aes(LeagueIndex, ComplexUnitsMadeTot), data = sc) + 
-  geom_histogram(stat = "identity") 
+Hey, that's pretty neat. There's about a 10 ms decrease in action latency when moving through leagues! The trend is also expected as the players who do more are better. 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
 ggplot(aes(factor(LeagueIndex), AssignToHotkeys), data = sc) + 
   geom_boxplot()
 
@@ -298,14 +271,19 @@ by(sc$UniqueHotkeys, sc$LeagueIndex, summary)
 
 ggplot(aes(factor(LeagueIndex), UniqueHotkeysTot), data = sc) + 
   geom_boxplot()
+```
+
+While it does look like better players are using their hot keys, comparing the plots of unique hot keys and assigning to hot keys doesn't show you how hot keys are used. So we are still unsure of what better players are doing differently. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
+ggplot(aes(LeagueIndex, ComplexUnitsMadeTot), data = sc) + 
+  geom_histogram(stat = "identity") 
 
 ggplot(aes(factor(LeagueIndex), WorkersMade), data = sc) + 
   geom_boxplot()
 ```
 
-When comparing league index across many variables, it looks like better players play much faster, and do a little of everything, more. 
-
-Since APM and action latency are the most correlated to league index, I decided to use APM as my basis first. Both are related to activity of a player in general, and it makes sense that the player who does more is better. 
+I thought complex units and workers made would favor higher level players as a general trend. The one problem I see with workers made is that it is highly dependent on the game rather than how good a player is. It looks the median values plateau after a certain point. This could just mean it's one of the first skills learned by players. I figured only better players would use complex units because they're difficult to control. There are definitely a variety of reasons why this seems to be untrue to a degree.
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, APM_plots}
 ggplot(aes(WorkersCreatedTotal, APM), data = sc_wo_na) + 
@@ -352,12 +330,11 @@ ggplot(aes(MinimapAttacks, APM), data = sc) +
   xlab("MinimapAttacks")
 ```
 
-When looking at a player's APM, workers created isn't very telling. This isn't surprising because workers created is highly dependent on the game. Workers created compared to APM to certain timestamps would be better measures. The other plots give a little insight into what players are doing with their actions.
+When looking at a player's APM, workers created isn't very telling. This further confirms my thoughts that workers created in a game is too dependent on context to help determine skill levels. The other plots give a little insight into what players are doing with their actions. 
+
+While it does make sense that players who play faster are switching screens more, seeing lower delays in actions and smaller gaps between switching screens gives us clues as to what better players are doing differently with their applied actions in game. 
 
 # Bivariate Analysis
-
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
@@ -377,13 +354,6 @@ I was surprised by how little the correlation between hot key assignemnt and hot
 The league placement and APM are both strongly negatively correlated to action latency. All the PAC data correlate very well with league placement. It's also no surprise that it correlates with APM naturally directly affects any PAC numbers. 
 
 # Multivariate Plots Section
-
-> **Tip**: Now it's time to put everything together. Based on what you found in
-the bivariate plots section, create a few multivariate plots to investigate
-more complex interactions between variables. Make sure that the plots that you
-create here are justified by the plots you explored in the previous section. If
-you plan on creating any mathematical models, this is the section where you
-will do that.
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 ggplot(aes(APM, GapBetweenPACs), data = sc) + 
@@ -466,7 +436,6 @@ ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
   scale_color_brewer(type = "qual") + 
   theme(legend.position = "top")
 ```
-
 
 # Multivariate Analysis
 
