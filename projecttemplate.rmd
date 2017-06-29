@@ -289,9 +289,11 @@ I thought complex units and workers made would favor higher level players as a g
 ggplot(aes(WorkersCreatedTotal, APM), data = sc_wo_na) + 
   geom_point()
 
+# Changed alpha levels for overplotting
 ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
   geom_point(alpha = 1/10)
 
+# Changed alpha again for overplotting and x axis to see bulk of data
 ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
   geom_point(alpha = 1/3) + 
   scale_x_continuous(limits = c(0, 150), breaks = seq(0,150,25))
@@ -333,6 +335,8 @@ ggplot(aes(MinimapAttacks, APM), data = sc) +
 When looking at a player's APM, workers created isn't very telling. This further confirms my thoughts that workers created in a game is too dependent on context to help determine skill levels. The other plots give a little insight into what players are doing with their actions. 
 
 While it does make sense that players who play faster are switching screens more, seeing lower delays in actions and smaller gaps between switching screens gives us clues as to what better players are doing differently with their applied actions in game. 
+
+Some players don't use minimap attacks at all. This might be a clue that it is an underused mechanic at the time of data collection.
 
 # Bivariate Analysis
 
