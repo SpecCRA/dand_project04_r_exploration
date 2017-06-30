@@ -61,7 +61,7 @@ My main question is which variables affect skill level most? Other questions inc
 
 # Univariate Plots Section
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots}
 summary(sc)
 
 ggplot(aes(LeagueIndex), data = sc) + 
@@ -402,7 +402,7 @@ ggplot(aes(HoursPerWeek, (ActionLatency + GapBetweenPACs),
 
 When comparing league, number of PACs, and actions in PACs, there appears to be no real relation among these three variables. Better players don't appear to do any more per PAC than worse players do. Hours per week is not very telling of how good someone is. I feel this may be a data collection error rather than actual truth.
 
-```{r FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont2}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont2}
 ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
            color = factor(LeagueIndex)), 
        data = sc) + 
@@ -519,8 +519,8 @@ ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
   facet_wrap(~UniqueHotkeysTot) + 
   theme(legend.position = "top") + 
   labs(title = "Hot Key Usage to APM separated by Total Unique Hot Keys",
-       xlab = "APM",
-       ylab = "Total Hot Key Usage") +
+       x = "APM",
+       y = "Total Hot Key Usage") +
   scale_color_discrete(name = "League",
                        breaks = c("1", "2", "3", "4", "5", "6", "7", "8"),
                        labels = c("Bronze", "Silver", "Gold", "Platinum", 
@@ -557,4 +557,14 @@ the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
 
-Something to improve on - APM patterns through the game because peak APM may be more telling than regular APM through the game if all you do is spam.
+The StarCraft 2 replay dataset contained final game data on a variety of topics. Initially, I found the idea of a perception action cycle to be the most interesting because actions per minute data is regarded as noisy data. I did try to suss out what APM is being spent doing and whether there are stark differences in leagues. For instance, are there certain mechanics that some levels are using that lower ones aren't? 
+
+The data also made it very clear that obviously in a game where you will never be able to do everything, how quickly you can act matters most. However, rather than mindlessly running through the game, it is more important to act quickly in various parts of the map. Being able to act swiftly on multiple screens is the mark of a great player.
+
+While there are no certainties, it looks as if better players are also utilizing as many game mechanics as possible. They input actions into the minimap to explore or move armies for multi-pronged attacks, utilize at least four hot keys, and continuously make workers to proper saturation points. I was most surprised by how little players utilize hot keys based on what I see now. 
+
+The main issue I see with this data set is that it is collected from the beginnings of StarCraft 2 when players are still learning how to play. If I were to look at a newer dataset, I'd guess players utilize more hot keys, are even faster, and the differences in league will be less about speed but more about efficient use of actions. I'd also guess the minimum unique hot keys will go up from 4 to at least 7 when including the number row and the function row on keyboards.
+
+The other big limitation I find with this data is that it's a snapshot at the end of the game. I would have liked to examine APM ranges within the game, peak actions, and when certain actions such as map exploration happens, and how everything contributes to whether a player won or lost. 
+
+To expand on exploration, I'd examine how time affects games next. Player bases always complain about how mid league placements (4, 5, 6) consistently have players pulling scummy tactics to win games. Those games are typically shorter than "proper" games and are frowned upon by the community.
