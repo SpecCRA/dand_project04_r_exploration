@@ -29,6 +29,8 @@ library(RColorBrewer)
 ```
 
 ```{r echo=FALSE, message=FALSE}
+# This chunk is just for me when I switch between my MacBook and my Mac Mini
+
 # for tiny
 #setwd("~/dand_files/project04_files/")
 
@@ -245,7 +247,7 @@ by(sc$APM, sc$LeagueIndex, summary)
 
 I imagined age to have some factor in determining overall skill for a variety of reasons. From the plot, it looks like every league has similar age means and medians. However, there is a stark rise in APM as league placements go up. So as expected, APM is worth exploring further.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_PACs}
 ggplot(aes(factor(LeagueIndex), NumberOfPACs), data = sc) +
   geom_boxplot()
 
@@ -260,7 +262,7 @@ by(sc$ActionLatency, sc$LeagueIndex, summary)
 
 Hey, that's pretty neat. There's about a 10 ms decrease in action latency when moving through leagues! The trend is also expected as the players who do more are better. 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_hotkeys}
 ggplot(aes(factor(LeagueIndex), AssignToHotkeys), data = sc) + 
   geom_boxplot()
 
@@ -275,7 +277,7 @@ ggplot(aes(factor(LeagueIndex), UniqueHotkeysTot), data = sc) +
 
 While it does look like better players are using their hot keys, comparing the plots of unique hot keys and assigning to hot keys doesn't show you how hot keys are used. So we are still unsure of what better players are doing differently. 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_units}
 ggplot(aes(LeagueIndex, ComplexUnitsMadeTot), data = sc) + 
   geom_histogram(stat = "identity") 
 
@@ -358,7 +360,6 @@ I was surprised by how little the correlation between hot key assignemnt and hot
 The league placement and APM are both strongly negatively correlated to action latency. All the PAC data correlate very well with league placement. It's also no surprise that it correlates with APM naturally directly affects any PAC numbers. 
 
 # Multivariate Plots Section
-
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 ggplot(aes(APM, GapBetweenPACs), data = sc) + 
   geom_point(alpha = 0.65, size = 0.75, aes(color = factor(LeagueIndex))) + 
@@ -366,16 +367,21 @@ ggplot(aes(APM, GapBetweenPACs), data = sc) +
                      guide = guide_legend(title = "League", reverse = T, 
                                           override.aes = list(alpha = 1, size = 2))) +
   scale_y_log10() + 
-  scale_x_sqrt()
+  scale_x_sqrt() + 
+  facet_wrap(~UniqueHotkeysTot)
 
-ggplot(aes(ActionLatency, APM), data = sc) + 
+ggplot(aes(APM, ActionLatency), data = sc) + 
   geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
   scale_color_brewer(type = "div",
                      guide = guide_legend(title = "League", reverse = T, 
                                           override.aes = list(alpha = 1, size = 2))) + 
   scale_x_log10() + 
   facet_wrap(~UniqueHotkeysTot)
+```
 
+When looking at the gaps between actions, you can easily tell skill and speed go together. However, the number of unique hot keys starts look the same after 5 unique hot keys untilized. 
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont1}
 ggplot(aes(ActionsInPAC, NumberOfPACs),
        data = sc) + 
   geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
@@ -392,7 +398,11 @@ ggplot(aes(HoursPerWeek, (ActionLatency + GapBetweenPACs),
   scale_x_continuous(limits = c(0, 100)) + 
   scale_color_brewer(type = "qual",
                      guide = guide_legend(title = "League", reverse = T))
+```
 
+When comparing league, number of PACs, and actions in PACs, there appears to be no real relation among these three variables. Better players don't appear to do any more per PAC than worse players do. Hours per week is not very telling of how good someone is. I feel this may be a data collection error rather than actual truth.
+
+```{r FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont2}
 ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
            color = factor(LeagueIndex)), 
        data = sc) + 
@@ -402,6 +412,7 @@ ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs),
   ylim(0, 300) +
   scale_x_continuous(breaks = seq(0,0.008, 0.001)) 
 
+# Split time spent in one section of the screen by useage of hot keys
 ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
            color = factor(LeagueIndex)), 
        data = sc) + 
@@ -410,18 +421,15 @@ ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs),
                      guide = guide_legend(title = "League", reverse = T)) + 
   ylim(0, 300) +
   scale_x_continuous(breaks = seq(0,0.008, 0.001)) + 
-  facet_wrap(~UniqueHotkeysTot)  
-  
-ggplot(aes((MinimapAttacks + MinimapRightClicks), APM), data = sc) + 
-  geom_point(alpha = 0.5, size = 0.8) + 
-  scale_x_log10() +
-  scale_y_sqrt() + 
-  facet_wrap(~LeagueIndex)
+  facet_wrap(~UniqueHotkeysTot) 
+```
 
-ggplot(aes(factor(LeagueIndex), (MinimapAttacks + MinimapRightClicks)), 
-           data = sc) +
-  geom_boxplot(aes(color = APM_bucket)) + 
-  coord_cartesian(ylim = c(0, 0.002))
+There's a clear relationship between time spent in one screen section and the number of PACs in a game. If anything, it's interesting to see how small the difference is between good and bad players just looking at total milliseconds spent on one screen. 
+
+When faceted by unique hot keys, I think the most surprising is you see some very good players barely use any hot keys or none at all! I figured this was a pretty universal mechanic that only the beginners neglect. I'm even surprised to see platinum (LeagueIndex == 4) players neglect hot keys completely. However, it does look like once you get to 6 hot keys and on, you are efficiently able to do more and faster. 
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont3}
+# I was just using this to test labels and how I could color histograms
 
 ggplot(aes(x = APM, color = factor(LeagueIndex)), data = sc) +
   geom_histogram(binwidth = 50) +
@@ -431,8 +439,27 @@ ggplot(aes(x = APM, color = factor(LeagueIndex)), data = sc) +
                                  "Diamond", "Masters", "Grandmaster", "Pro")) + 
   theme(legend.position = "top")
 
+ggplot(aes((MinimapAttacks + MinimapRightClicks), APM, color = APM_bucket), 
+       data = sc) + 
+  geom_point(alpha = 0.5, size = 0.8) +
+  scale_x_log10() +
+  scale_y_sqrt() + 
+  facet_wrap(~LeagueIndex)
+
+ggplot(aes(factor(LeagueIndex), (MinimapAttacks + MinimapRightClicks)), 
+           data = sc) +
+  geom_boxplot(aes(color = APM_bucket)) + 
+  coord_cartesian(ylim = c(0, 0.002))
+```
+
+While it's clear that better players simple play faster, they're also using their actions to click on the minimap whether it be for attacking or exploring. As the league index rises, the graph shifts towards the right. 
+
+Again, if there's anything surprising about these plots, it's that there are masters level players with <= 100 APM.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont4}
 ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) + 
-  geom_boxplot(aes(color = APM_bucket))
+  geom_boxplot(aes(color = APM_bucket)) +
+  ylim(25, 250)
 
 ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
   geom_point(aes(color = factor(LeagueIndex))) +
@@ -440,6 +467,8 @@ ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
   scale_color_brewer(type = "qual") + 
   theme(legend.position = "top")
 ```
+
+While it's clear that reaction speed and playing speed are good indicators of league index, hot key usage is not as telling. There is some relationship to players who are better utilize more hot keys, but their actions are spent doing other things. It does look like the majoirty of players use at least four hotkeys. 
 
 # Multivariate Analysis
 
@@ -468,28 +497,56 @@ that you have refined your selected plots for good titling, axis labels (with
 units), and good aesthetic choices (e.g. color, transparency). After each plot,
 make sure you justify why you chose each plot by describing what it shows.
 
-### Plot One
+### Plot One: Speed Matters
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_One}
-
+ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) + 
+  geom_boxplot(aes(color = APM_bucket)) +
+  ylim(25, 250) + 
+  labs(title = "Time Spent in One Screen by League Index", 
+       x = "League Placement",
+       y = "Time (ms)",
+       color = "APM") +
+  theme(legend.position = c(0.9, 0.8)) 
 ```
 
 ### Description One
+No surprises here. Better players act faster and play faster. They also switch screens faster than worse players do. One way StarCraft 2 players gain an advantage is to attack multiple spots on the map to misdirect the opponents' screens. Being able to switch back and forth faster is easily an advantage. 
 
-
-### Plot Two
+### Plot Two: But Hot Keys, Not So Much
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Two}
-
+ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
+  geom_point(aes(color = factor(LeagueIndex))) +
+  facet_wrap(~UniqueHotkeysTot) + 
+  theme(legend.position = "top") + 
+  labs(title = "Hot Key Usage to APM separated by Total Unique Hot Keys",
+       xlab = "APM",
+       ylab = "Total Hot Key Usage") +
+  scale_color_discrete(name = "League",
+                       breaks = c("1", "2", "3", "4", "5", "6", "7", "8"),
+                       labels = c("Bronze", "Silver", "Gold", "Platinum", 
+                                  "Diamond", "Masters", "Grandmaster", "Pro"))
 ```
 
 ### Description Two
 
+While we can clearly tell playing speed matters, we could also tell from the previous plot that moving around the map matters too. In this plot, it shows that utilizing hot keys don't matter as much. It looks like most players use at least two hot keys, possibly one for production and one for producing workers. Otherwise, there aren't that many differences after 5 unique hot keys. The most surprising thing is that some very good, diamond and masters, players aren't using hot keys at all.
 
-### Plot Three
+### Plot Three: What Else is All That APM Doing?
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Three}
-
+ggplot(aes((MinimapAttacks + MinimapRightClicks), APM, color = APM_bucket), 
+       data = sc) + 
+  geom_point(alpha = 0.5, size = 0.8) +
+  scale_x_log10() +
+  scale_y_sqrt() + 
+  facet_wrap(~LeagueIndex) + 
+  xlab("Minimap Clicks") +
+  ggtitle("APM vs Minimap Actions by League Index") + 
+  scale_color_discrete(name = "APM Range")
 ```
 
 ### Description Three
+
+As we move up in league index, we can see a shift towards the right of each plot indicating that better players utilize minimap attacks and minimap right clicks more. In addition, it follows the trend that the best players are utilizing more available game mechanics than worse players. Both grandmaster and pro level players are using far more minimap clicks whether it be for scouting or moving army while doing other things. 
 
 ------
 
@@ -499,9 +556,5 @@ make sure you justify why you chose each plot by describing what it shows.
 the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
-
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
->>>>>>> 4248a1537320273e9c25338bbff21d74d1323c48
 
 Something to improve on - APM patterns through the game because peak APM may be more telling than regular APM through the game if all you do is spam.
