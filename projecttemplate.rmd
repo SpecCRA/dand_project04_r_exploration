@@ -75,7 +75,13 @@ ggplot(aes(Age), data = sc) +
 
 ggplot(aes(x = 1, y = Age), 
        data = sc) + 
-  geom_boxplot()
+  geom_boxplot(color = "orange") + 
+  geom_jitter(alpha = 0.1) + 
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               size = 3,
+               color = "red")
+  
 
 summary(sc$Age)
 table(sc$Age)
@@ -195,6 +201,9 @@ Just looking through the data, players with LeagueIndex 8, the professional play
 # Bivariate Plots Section
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, new_variables}
+# Every time I restart R, I had to re-add every variable
+# So I just popped most of them in the same place
+
 sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
 sc_wo_na$ComplexUnitsMadeTot <- sc_wo_na$ComplexUnitsMade * sc_wo_na$MaxTimeStamp
 sc_wo_na$ComplexAbilityUsed <- round(sc_wo_na$ComplexUnitsMadeTot)
@@ -208,7 +217,7 @@ sc$ComplexUnitsMadeTot <- sc$ComplexUnitsMade * sc$MaxTimeStamp
 sc$ComplexUnitsMadeTot <- round(sc$ComplexUnitsMadeTot)
 
 sc_wo_na$HoursPerWeek_bucket <- cut(sc_wo_na$HoursPerWeek, 
-                                    c(0, 5, 10, 15, 20, 25, 30, 50))
+                                    c(0, 5, 10, 15, 20, 25, 30, 50, 100))
 
 sc$APM_bucket <- cut(sc$APM,
                      c(0, 100, 150, 200, 300, 500))
@@ -278,7 +287,11 @@ ggplot(aes(factor(LeagueIndex), UniqueHotkeys), data = sc) +
 by(sc$UniqueHotkeys, sc$LeagueIndex, summary)
 
 ggplot(aes(factor(LeagueIndex), UniqueHotkeysTot), data = sc) + 
-  geom_boxplot()
+  geom_boxplot() +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red", 
+               size = 2)
 ```
 
 While it does look like better players are using their hot keys, comparing the plots of unique hot keys and assigning to hot keys doesn't show you how hot keys are used. So we are still unsure of what better players are doing differently. 
@@ -345,7 +358,7 @@ ggplot(aes(MinimapAttacks, APM), data = sc) +
   geom_point(alpha = 1/5, size = 1) + 
   scale_x_sqrt() + 
   xlab("MinimapAttacks") + 
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", se = FALSE)
 ```
 
 When looking at a player's APM, workers created isn't very telling. This further confirms my thoughts that workers created in a game is too dependent on context to help determine skill levels. The other plots give a little insight into what players are doing with their actions. 
@@ -414,6 +427,12 @@ ggplot(aes(HoursPerWeek, (ActionLatency + GapBetweenPACs),
   scale_x_continuous(limits = c(0, 100)) + 
   scale_color_brewer(type = "qual",
                      guide = guide_legend(title = "League", reverse = T))
+
+ggplot(aes(factor(HoursPerWeek_bucket), (ActionLatency + GapBetweenPACs), 
+           fill = factor(LeagueIndex)), 
+       data = subset(sc_wo_na, HoursPerWeek < 120 &
+                       !is.na(sc_wo_na$HoursPerWeek_bucket))) +
+  geom_histogram(stat = "identity", position = "dodge")
 ```
 
 When comparing league, number of PACs, and actions in PACs, there appears to be no real relation among these three variables. Better players don't appear to do any more per PAC than worse players do. Hours per week is not very telling of how good someone is. I feel this may be a data collection error rather than actual truth.
