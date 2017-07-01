@@ -172,9 +172,13 @@ There are 3395 contributing players to this dataset with one general skill categ
 LeagueIndex goes from 1 to 8. 1 being the worst and 8 being you should go compete in tournaments.
 
 Observations:
+
 * Most contributing users are in the top half of the player pool according to the league placement distribution.
-* Mean APM among these players is 117.05 which is a little low from my expectations
+
+* Mean APM among these players is 117.05 which is a little low from my expectations.
+
 * All the variables that have been divided by time are very similarly distributed.
+
 * The max value in TotalHours is 1000000 hours which is definitely an error because that is physically impossible. The game was released in July 2010, and the data was collected in 2013. This is probably just some people being funny.
 
 ### What is/are the main feature(s) of interest in your dataset?
@@ -215,7 +219,9 @@ sc$UniqueHotkeysTot <- round(sc$UniqueHotkeysTot)
 
 sc$ComplexUnitsMadeTot <- sc$ComplexUnitsMade * sc$MaxTimeStamp
 sc$ComplexUnitsMadeTot <- round(sc$ComplexUnitsMadeTot)
+```
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, cut_variables}
 sc_wo_na$HoursPerWeek_bucket <- cut(sc_wo_na$HoursPerWeek, 
                                     c(0, 5, 10, 15, 20, 25, 30, 50, 100))
 
@@ -302,9 +308,15 @@ ggplot(aes(LeagueIndex, ComplexUnitsMadeTot), data = sc) +
 
 ggplot(aes(factor(LeagueIndex), WorkersMade), data = sc) + 
   geom_bar(stat = "identity", position = "dodge")
+
+ggplot(aes(factor(LeagueIndex), WorkersMade), data = sc) + 
+  geom_boxplot() +
+  stat_summary(fun.y = "mean",
+               geom = "point",
+               color = "red")
 ```
 
-I thought complex units and workers made would favor higher level players as a general trend. The one problem I see with workers made is that it is highly dependent on the game rather than how good a player is. It looks the median values plateau after a certain point. This could just mean it's one of the first skills learned by players. I figured only better players would use complex units because they're difficult to control. There are definitely a variety of reasons why this seems to be untrue to a degree.
+I thought complex units and workers made would favor higher level players as a general trend. The one problem I see with workers made is that it is highly dependent on the game rather than how good a player is. It looks the median values of workers made plateau after a certain point. This could just mean it's one of the first skills learned by players. I figured only better players would use complex units because they're difficult to control. There are definitely a variety of reasons why this seems to be untrue to a degree.
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, APM_plots}
 ggplot(aes(WorkersCreatedTotal, APM), data = sc_wo_na) + 
@@ -373,14 +385,14 @@ Some players don't use minimap attacks at all. This might be a clue that it is a
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
 
-As expected, the better players everything a little more than lower placed players do. The better players utlize more mechanical tools, play much faster, and switch to different parts of the map more. They utilize more hot keys, make more workers to some point, act faster, and possibly most importantly, act around the map more often.
+As expected, the better players do everything a little more than lower placed players do. The better players utlize more mechanical tools, play much faster, and switch to different parts of the map more. They utilize more hot keys, make more workers to some point, act faster, and possibly most importantly, act around the map more often.
 
 When combing through APM usage, it looks like players with higher APM are constantly clicking around the map to utilize more actions and are constantly using their hot keys. Naturally, the faster they play, the less delay there is between actions. However, they are not right clicking onto the map very much with all that speed. 
 
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
 
-I was surprised by how little the correlation between hot key assignemnt and hot key usage was when plotted against APM. But I would like to see how action latency, hot key usage, APM, and league placement all go together. I'm surprised at how complex units just drop off at the top tiers and have a spike in the mid tiers.
+I was surprised by how little the correlation between hot key assignment and hot key usage was when plotted against APM. I would like to see how action latency, hot key usage, APM, and league placement all go together. I'm surprised at how complex units just drop off at the top tiers and have a spike in the mid tiers. I am guessing players are making complex units out of novelty.
 
 ### What was the strongest relationship you found?
 
@@ -411,6 +423,7 @@ ggplot(aes(APM, ActionLatency), data = sc) +
 When looking at the gaps between actions, you can easily tell skill and speed go together. However, the number of unique hot keys starts look the same after 5 unique hot keys untilized. 
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont1}
+
 ggplot(aes(ActionsInPAC, NumberOfPACs),
        data = sc) + 
   geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
@@ -427,13 +440,16 @@ ggplot(aes(HoursPerWeek, (ActionLatency + GapBetweenPACs),
   scale_x_continuous(limits = c(0, 100)) + 
   scale_color_brewer(type = "qual",
                      guide = guide_legend(title = "League", reverse = T))
-
-ggplot(aes(factor(HoursPerWeek_bucket), (ActionLatency + GapBetweenPACs), 
-           fill = factor(LeagueIndex)), 
-       data = subset(sc_wo_na, HoursPerWeek < 120 &
-                       !is.na(sc_wo_na$HoursPerWeek_bucket))) +
-  geom_histogram(stat = "identity", position = "dodge")
 ```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_hours}
+#ggplot(aes(HoursPerWeek_bucket, (ActionLatency + GapBetweenPACs), 
+#           fill = factor(LeagueIndex)), 
+#       data = subset(sc_wo_na, HoursPerWeek < 120 &
+#                       !is.na(sc_wo_na$HoursPerWeek_bucket))) +
+#  geom_histogram(stat = "identity", position = "dodge")
+```
+
 
 When comparing league, number of PACs, and actions in PACs, there appears to be no real relation among these three variables. Better players don't appear to do any more per PAC than worse players do. Hours per week is not very telling of how good someone is. I feel this may be a data collection error rather than actual truth.
 
@@ -501,7 +517,7 @@ Again, if there's anything surprising about these plots, it's that there are mas
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont4}
 ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) + 
-  geom_boxplot(aes(color = APM_bucket)) +
+  geom_boxplot(aes(fill = APM_bucket)) +
   ylim(25, 250)
 
 ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
@@ -525,20 +541,9 @@ Perhaps this isn't really surprising, but speed plays a huge part in league plac
 
 I'm surprised at how little hot key usage affects overall league placement and skill. Since most of the pros and I'm assuming most of the better players played StarCraft Brood War, constantly selecting, assigning, re-assigning, and using all your hot keys from 1 to 0 as well as F2, F3, F4, and F5 seems like a natural transition. This may be a clue about how StarCraft 2 is different mechanically from StarCraft Brood War. 
 
-### OPTIONAL: Did you create any models with your dataset? Discuss the \
-strengths and limitations of your model.
-
 ------
 
 # Final Plots and Summary
-
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One: Speed Matters
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_One}
@@ -573,7 +578,7 @@ ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
 
 ### Description Two
 
-While we can clearly tell playing speed matters, we could also tell from the previous plot that moving around the map matters too. In this plot, it shows that utilizing hot keys don't matter as much. It looks like most players use at least two hot keys, possibly one for production and one for producing workers. Otherwise, there aren't that many differences after 5 unique hot keys. The most surprising thing is that some very good, diamond and masters, players aren't using hot keys at all.
+While we can clearly tell playing speed matters, we could also tell from the previous plot that moving around the map matters too. In this plot, it shows that utilizing hot keys doesn't matter as much. It looks like most players use at least two hot keys, possibly one for production and one for producing workers. Otherwise, there aren't that many differences after 5 unique hot keys. The most surprising thing is that some very good, diamond and masters, players aren't using hot keys at all.
 
 ### Plot Three: What Else is All That APM Doing?
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Three, fig.height=10}
@@ -589,16 +594,11 @@ ggplot(aes((MinimapAttacks + MinimapRightClicks), APM),
 
 ### Description Three
 
-As we move up in league index, we can see a shift towards the right of each plot indicating that better players utilize minimap attacks and minimap right clicks more. In addition, it follows the trend that the best players are utilizing more available game mechanics than worse players. Both grandmaster and pro level players are using far more minimap clicks whether it be for scouting or moving army while doing other things. 
+As we move up in league index, we can see a shift towards the right of each plot indicating that better players utilize minimap attacks and minimap right clicks more. In addition, it follows the trend that the best players are utilizing more available game mechanics than worse players. Both grandmaster and pro level players are using far more minimap clicks whether it be for scouting or moving army while doing other things. This could be an indicator that using minimap actions is one of the last things players at the time learned.
 
 ------
 
 # Reflection
-
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
 
 The StarCraft 2 replay dataset contained final game data on a variety of topics. Initially, I found the idea of a perception action cycle to be the most interesting because actions per minute data is regarded as noisy data. I did try to suss out what APM is being spent doing and whether there are stark differences in leagues. For instance, are there certain mechanics that some levels are using that lower ones aren't? 
 
@@ -608,6 +608,6 @@ While there are no certainties, it looks as if better players are also utilizing
 
 The main issue I see with this data set is that it is collected from the beginnings of StarCraft 2 when players are still learning how to play. If I were to look at a newer dataset, I'd guess players utilize more hot keys, are even faster, and the differences in league will be less about speed but more about efficient use of actions. I'd also guess the minimum unique hot keys will go up from 4 to at least 7 when including the number row and the function row on keyboards.
 
-The other big limitation I find with this data is that it's a snapshot at the end of the game. I would have liked to examine APM ranges within the game, peak actions, and when certain actions such as map exploration happens, and how everything contributes to whether a player won or lost. 
+The other big limitation I find with this data is that it's a snapshot at the end of the game. I would have liked to examine APM ranges within the game, peak actions, when certain actions such as map exploration happens, and how everything contributes to whether a player won or lost a game. 
 
 To expand on exploration, I'd examine how time affects games next. Player bases always complain about how mid league placements (4, 5, 6) consistently have players pulling scummy tactics to win games. Those games are typically shorter than "proper" games and are frowned upon by the community.
