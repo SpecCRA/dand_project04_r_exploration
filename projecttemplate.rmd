@@ -44,7 +44,8 @@ library(RColorBrewer)
 sc <- read.csv("starcraft.csv")
 sc$WorkersCreatedTotal <- sc$WorkersMade * sc$MaxTimeStamp
 sc$WorkersCreatedTotal <- round(sc$WorkersCreated)
-sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) & !is.na(TotalHours))
+sc_wo_na <- subset(sc, !is.na(Age) & !is.na(HoursPerWeek) &
+                     !is.na(TotalHours))
 ```
 
 # Introduction
@@ -71,6 +72,11 @@ table(sc$LeagueIndex)
 ggplot(aes(Age), data = sc) + 
   geom_histogram(binwidth = 1) +
   scale_x_continuous(breaks = seq(0,50,5))
+
+ggplot(aes(x = 1, y = Age), 
+       data = sc) + 
+  geom_boxplot()
+
 summary(sc$Age)
 table(sc$Age)
 ```
@@ -121,7 +127,7 @@ ggplot(aes(APM), data = sc) +
 
 summary(sc$APM)
 ```
-The majority of APM values are somewhere between 50 and 200. Zooming in, we get a clearer view of that most players do play within the 80 and 150 APM range. 
+The majority of APM values are somewhere between 50 and 200. Zooming in, we get a clearer view of that most players do play within the 80 and 150 APM range. I chose to display all the APM values. Although they are ridiculous values, they are possible and people do play super fast.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_general}
 ggplot(aes(GapBetweenPACs), data = sc) + 
@@ -235,12 +241,12 @@ At first glance, it looks like APM, PAC data, and hot key usage the strongest pr
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Bivariate_plots_cont}
 ggplot(aes(factor(LeagueIndex), Age), data = sc_wo_na) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 by(sc$Age, sc$LeagueIndex, summary)
 
 ggplot(aes(factor(LeagueIndex), APM), data = sc_wo_na) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 by(sc$APM, sc$LeagueIndex, summary)
 ```
@@ -249,13 +255,13 @@ I imagined age to have some factor in determining overall skill for a variety of
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_PACs}
 ggplot(aes(factor(LeagueIndex), NumberOfPACs), data = sc) +
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 ggplot(aes(factor(LeagueIndex), GapBetweenPACs), data = sc) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 ggplot(aes(factor(LeagueIndex), ActionLatency), data = sc) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 by(sc$ActionLatency, sc$LeagueIndex, summary)
 ```
@@ -264,10 +270,10 @@ Hey, that's pretty neat. There's about a 10 ms decrease in action latency when m
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_hotkeys}
 ggplot(aes(factor(LeagueIndex), AssignToHotkeys), data = sc) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 ggplot(aes(factor(LeagueIndex), UniqueHotkeys), data = sc) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 
 by(sc$UniqueHotkeys, sc$LeagueIndex, summary)
 
@@ -279,10 +285,10 @@ While it does look like better players are using their hot keys, comparing the p
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_plots_units}
 ggplot(aes(LeagueIndex, ComplexUnitsMadeTot), data = sc) + 
-  geom_histogram(stat = "identity") 
+  geom_histogram(stat = "identity", position = "dodge") 
 
 ggplot(aes(factor(LeagueIndex), WorkersMade), data = sc) + 
-  geom_boxplot()
+  geom_bar(stat = "identity", position = "dodge")
 ```
 
 I thought complex units and workers made would favor higher level players as a general trend. The one problem I see with workers made is that it is highly dependent on the game rather than how good a player is. It looks the median values plateau after a certain point. This could just mean it's one of the first skills learned by players. I figured only better players would use complex units because they're difficult to control. There are definitely a variety of reasons why this seems to be untrue to a degree.
@@ -298,40 +304,48 @@ ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
 # Changed alpha again for overplotting and x axis to see bulk of data
 ggplot(aes(WorkersCreatedTotal, APM), data = sc) +
   geom_point(alpha = 1/3) + 
-  scale_x_continuous(limits = c(0, 150), breaks = seq(0,150,25))
+  scale_x_continuous(limits = c(0, 150), breaks = seq(0,150,25)) +
+  geom_smooth(method = "lm", color = "purple")
 
 ggplot(aes(NumberOfPACs, APM), data = sc) + 
   geom_point(alpha = 1/3) + 
-  scale_x_continuous(limits = c(0, 0.006)) 
+  scale_x_continuous(limits = c(0, 0.006)) + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(SelectByHotkeys, APM), data = sc) + 
-  geom_point(alpha = 1/10)
+  geom_point(alpha = 1/10) + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(SelectByHotkeys, APM), data = sc) + 
   geom_point(alpha = 1/5) + 
   scale_x_continuous(limits = c(0, 0.015)) + 
   scale_x_sqrt() + 
-  xlab("sqrt(SelectByHotkeys)")
+  xlab("sqrt(SelectByHotkeys)") + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(AssignToHotkeys, APM), data = sc) + 
   geom_point(alpha = 1/10) + 
   scale_x_log10() + 
-  xlab("Log10(AssignToHotkeys)")
+  xlab("Log10(AssignToHotkeys)") + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(ActionLatency, APM), data = sc) + 
   geom_point(alpha = 1/5, size = 0.7) + 
   scale_y_log10() + 
-  xlab("Log10(ActionLatency)") 
+  xlab("Log10(ActionLatency)") + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(GapBetweenPACs, APM), data = sc) + 
   geom_point(alpha = 1/5, size = 1) +
   scale_x_log10(limit = c(10,100))  + 
-  xlab("Log10(GapBetweenPACs)")
+  xlab("Log10(GapBetweenPACs)") + 
+  geom_smooth(method = "lm")
 
 ggplot(aes(MinimapAttacks, APM), data = sc) + 
   geom_point(alpha = 1/5, size = 1) + 
   scale_x_sqrt() + 
-  xlab("MinimapAttacks")
+  xlab("MinimapAttacks") + 
+  geom_smooth(method = "lm")
 ```
 
 When looking at a player's APM, workers created isn't very telling. This further confirms my thoughts that workers created in a game is too dependent on context to help determine skill levels. The other plots give a little insight into what players are doing with their actions. 
@@ -499,13 +513,14 @@ make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One: Speed Matters
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_One}
-ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) + 
-  geom_boxplot(aes(color = APM_bucket)) +
+ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), 
+       data = sc) + 
+  geom_boxplot(aes(fill = APM_bucket)) +
   ylim(25, 250) + 
   labs(title = "Time Spent in One Screen by League Index", 
        x = "League Placement",
        y = "Time (ms)",
-       color = "APM") +
+       fill = "APM") +
   theme(legend.position = c(0.9, 0.8)) 
 ```
 
@@ -513,9 +528,9 @@ ggplot(aes(factor(LeagueIndex), (GapBetweenPACs + ActionLatency)), data = sc) +
 No surprises here. Better players act faster and play faster. They also switch screens faster than worse players do. One way StarCraft 2 players gain an advantage is to attack multiple spots on the map to misdirect the opponents' screens. Being able to switch back and forth faster is easily an advantage. 
 
 ### Plot Two: But Hot Keys, Not So Much
-```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Two}
+```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Two, fig.height=8}
 ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
-  geom_point(aes(color = factor(LeagueIndex))) +
+  geom_point(aes(color = factor(LeagueIndex)), size = 0.65) +
   facet_wrap(~UniqueHotkeysTot) + 
   theme(legend.position = "top") + 
   labs(title = "Hot Key Usage to APM separated by Total Unique Hot Keys",
@@ -532,16 +547,15 @@ ggplot(aes(APM, (SelectByHotkeys + AssignToHotkeys)), data = sc) +
 While we can clearly tell playing speed matters, we could also tell from the previous plot that moving around the map matters too. In this plot, it shows that utilizing hot keys don't matter as much. It looks like most players use at least two hot keys, possibly one for production and one for producing workers. Otherwise, there aren't that many differences after 5 unique hot keys. The most surprising thing is that some very good, diamond and masters, players aren't using hot keys at all.
 
 ### Plot Three: What Else is All That APM Doing?
-```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Three}
-ggplot(aes((MinimapAttacks + MinimapRightClicks), APM, color = APM_bucket), 
+```{r echo = FALSE, message=FALSE, warning=FALSE, Plot_Three, fig.height=10}
+ggplot(aes((MinimapAttacks + MinimapRightClicks), APM), 
        data = sc) + 
-  geom_point(alpha = 0.5, size = 0.8) +
+  geom_point(alpha = 0.5, size = 0.75, aes(color = I("#00a0b2"))) +
   scale_x_log10() +
   scale_y_sqrt() + 
   facet_wrap(~LeagueIndex) + 
   xlab("Minimap Clicks") +
-  ggtitle("APM vs Minimap Actions by League Index") + 
-  scale_color_discrete(name = "APM Range")
+  ggtitle("APM vs Minimap Actions by League Index") 
 ```
 
 ### Description Three
