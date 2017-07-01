@@ -381,8 +381,9 @@ ggplot(aes(APM, GapBetweenPACs), data = sc) +
                      guide = guide_legend(title = "League", reverse = T, 
                                           override.aes = list(alpha = 1, size = 2))) +
   scale_y_log10() + 
-  scale_x_sqrt() + 
-  facet_wrap(~UniqueHotkeysTot)
+  scale_x_sqrt() +
+  geom_smooth(method = "lm") + 
+  facet_wrap(~UniqueHotkeysTot) 
 
 ggplot(aes(APM, ActionLatency), data = sc) + 
   geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
@@ -390,6 +391,7 @@ ggplot(aes(APM, ActionLatency), data = sc) +
                      guide = guide_legend(title = "League", reverse = T, 
                                           override.aes = list(alpha = 1, size = 2))) + 
   scale_x_log10() + 
+  geom_smooth(method = "lm") + 
   facet_wrap(~UniqueHotkeysTot)
 ```
 
@@ -399,9 +401,9 @@ When looking at the gaps between actions, you can easily tell skill and speed go
 ggplot(aes(ActionsInPAC, NumberOfPACs),
        data = sc) + 
   geom_point(size = 0.75, aes(color = factor(LeagueIndex))) + 
-  scale_color_brewer(type = "qual",
-                     guide = guide_legend(title = "League", reverse = T, 
-                                          override.aes = list(alpha = 1, size = 2))) + 
+  scale_color_brewer(type = "seq",
+                     palette = 4,
+                     guide = guide_legend(title = "League", reverse = T)) + 
   scale_x_log10()
 
 # Adding Action latency and gap between PACs shows how long a player spends in one screen to do stuff
@@ -421,20 +423,27 @@ ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs),
            color = factor(LeagueIndex)), 
        data = sc) + 
   geom_point(position = "jitter", alpha = 0.75, size = 1.5) + 
-  scale_color_brewer(type = "qual",
+  scale_color_brewer(type = "seq",
+                     palette =3,
                      guide = guide_legend(title = "League", reverse = T)) + 
   ylim(0, 300) +
-  scale_x_continuous(breaks = seq(0,0.008, 0.001)) 
+  scale_x_continuous(breaks = seq(0,0.008, 0.001)) +
+  geom_smooth(method = "lm", se = FALSE,
+              aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
+                  color = I("#f7d600")))
 
 # Split time spent in one section of the screen by useage of hot keys
 ggplot(aes(NumberOfPACs, (ActionLatency + GapBetweenPACs), 
            color = factor(LeagueIndex)), 
        data = sc) + 
-  geom_point(position = "jitter", alpha = 0.75, size = 1.5) + 
+  geom_point(position = "jitter", alpha = 0.75, size = 1) + 
   scale_color_brewer(type = "qual",
                      guide = guide_legend(title = "League", reverse = T)) + 
   ylim(0, 300) +
   scale_x_continuous(breaks = seq(0,0.008, 0.001)) + 
+  geom_smooth(aes(x = NumberOfPACs, y = (ActionLatency + GapBetweenPACs), 
+                  color = I("#000000")), 
+              method = "lm", se = FALSE) +
   facet_wrap(~UniqueHotkeysTot) 
 ```
 
@@ -445,7 +454,7 @@ When faceted by unique hot keys, I think the most surprising is you see some ver
 ```{r echo = FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_cont3}
 # I was just using this to test labels and how I could color histograms
 
-ggplot(aes(x = APM, color = factor(LeagueIndex)), data = sc) +
+ggplot(aes(x = APM, fill = factor(LeagueIndex)), data = sc) +
   geom_histogram(binwidth = 50) +
   scale_color_discrete(name = "League", 
                       breaks = c("1", "2", "3", "4", "5", "6", "7", "8"),
@@ -453,16 +462,17 @@ ggplot(aes(x = APM, color = factor(LeagueIndex)), data = sc) +
                                  "Diamond", "Masters", "Grandmaster", "Pro")) + 
   theme(legend.position = "top")
 
-ggplot(aes((MinimapAttacks + MinimapRightClicks), APM, color = APM_bucket), 
+ggplot(aes((MinimapAttacks + MinimapRightClicks), APM), 
        data = sc) + 
   geom_point(alpha = 0.5, size = 0.8) +
   scale_x_log10() +
   scale_y_sqrt() + 
+  geom_smooth(method = "lm", se = FALSE) + 
   facet_wrap(~LeagueIndex)
 
 ggplot(aes(factor(LeagueIndex), (MinimapAttacks + MinimapRightClicks)), 
            data = sc) +
-  geom_boxplot(aes(color = APM_bucket)) + 
+  geom_boxplot(aes(fill = APM_bucket)) + 
   coord_cartesian(ylim = c(0, 0.002))
 ```
 
