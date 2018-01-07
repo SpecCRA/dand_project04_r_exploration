@@ -13,3 +13,7 @@ This project explores a set of replay data in the real-time strategy game, StarC
 
 ## Credits
 * [Link to data source](https://www.kaggle.com/sfu-summit/starcraft-ii-replay-analysis)
+
+## Tech
+* **R**
+* **ggplot2**
